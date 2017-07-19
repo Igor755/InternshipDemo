@@ -2,6 +2,7 @@ package com.example.denfox.internshipdemo.adapters;
 
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,32 +42,44 @@ public class TaskAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View view, ViewGroup viewGroup) {
+    public View getView(int position, View convertView, ViewGroup viewGroup) {
 
-        LayoutInflater inflater = LayoutInflater.from(ctx);
+        ViewHolder holder;
+        View view = convertView;
 
-        view = inflater.inflate(R.layout.main_list_item, viewGroup, false);
+        if (view == null) {
+            Log.e("TaskAdapter", "inflatingView!");
+            LayoutInflater inflater = LayoutInflater.from(ctx);
+            view = inflater.inflate(R.layout.main_list_item, viewGroup, false);
 
-        CheckBox isCompleted = view.findViewById(R.id.item_task_check);
-        TextView taskTitle = view.findViewById(R.id.item_task_title);
-        ImageView taskTypeImage = view.findViewById(R.id.item_task_type_icon);
-        TextView taskTime = view.findViewById(R.id.item_task_alarm_time);
-        TextView taskDate = view.findViewById(R.id.item_task_alarm_date);
+            holder = new ViewHolder();
 
-        isCompleted.setChecked(getItem(position).isCompleted());
-        taskTitle.setText(getItem(position).getTaskName());
-        taskDate.setText(getItem(position).getTaskDate());
-        taskTime.setText(getItem(position).getTaskTime());
+            holder.isCompleted = view.findViewById(R.id.item_task_check);
+            holder.taskTitle = view.findViewById(R.id.item_task_title);
+            holder.taskTypeImage = view.findViewById(R.id.item_task_type_icon);
+            holder.taskTime = view.findViewById(R.id.item_task_alarm_time);
+            holder.taskDate = view.findViewById(R.id.item_task_alarm_date);
+
+            view.setTag(holder);
+        } else {
+            holder = (ViewHolder) view.getTag();
+        }
+
+
+        holder.isCompleted.setChecked(getItem(position).isCompleted());
+        holder.taskTitle.setText(getItem(position).getTaskName());
+        holder.taskDate.setText(getItem(position).getTaskDate());
+        holder.taskTime.setText(getItem(position).getTaskTime());
 
         switch (getItem(position).getTaskType()) {
             case ALARM:
-                taskTypeImage.setImageDrawable(ContextCompat.getDrawable(ctx, R.drawable.ic_alarm_grey600_24dp));
+                holder.taskTypeImage.setImageDrawable(ContextCompat.getDrawable(ctx, R.drawable.ic_alarm_grey600_24dp));
                 break;
             case NOTE:
-                taskTypeImage.setImageDrawable(ContextCompat.getDrawable(ctx, R.drawable.ic_note_outline_grey600_24dp));
+                holder.taskTypeImage.setImageDrawable(ContextCompat.getDrawable(ctx, R.drawable.ic_note_outline_grey600_24dp));
                 break;
             case PLACE:
-                taskTypeImage.setImageDrawable(ContextCompat.getDrawable(ctx, R.drawable.ic_map_marker_radius_grey600_24dp));
+                holder.taskTypeImage.setImageDrawable(ContextCompat.getDrawable(ctx, R.drawable.ic_map_marker_radius_grey600_24dp));
                 break;
         }
 
@@ -80,4 +93,15 @@ public class TaskAdapter extends BaseAdapter {
     public void setItems(ArrayList<TaskItem> items) {
         this.items = items;
     }
+
+
+    private static class ViewHolder {
+
+        CheckBox isCompleted;
+        TextView taskTitle;
+        ImageView taskTypeImage;
+        TextView taskTime;
+        TextView taskDate;
+    }
+
 }
