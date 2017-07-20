@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.denfox.internshipdemo.R;
+import com.example.denfox.internshipdemo.listeners.OnTaskRecyclerItemClickListener;
 import com.example.denfox.internshipdemo.models.TaskItem;
 
 import java.util.ArrayList;
@@ -21,16 +22,32 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
 
     private ArrayList<TaskItem> items;
     private Context ctx;
+    private OnTaskRecyclerItemClickListener listener;
 
     public TaskRecyclerAdapter(ArrayList<TaskItem> items, Context ctx) {
         this.items = items;
         this.ctx = ctx;
     }
 
+    public TaskRecyclerAdapter(ArrayList<TaskItem> items, Context ctx, OnTaskRecyclerItemClickListener listener) {
+        this.items = items;
+        this.ctx = ctx;
+        this.listener = listener;
+    }
+
     @Override
     public TaskRecyclerAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.main_list_item, parent, false);
-        ViewHolder viewHolder = new ViewHolder(view);
+        final ViewHolder viewHolder = new ViewHolder(view);
+
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (listener != null) {
+                    listener.onItemClick(view, viewHolder.getAdapterPosition());
+                }
+            }
+        });
 
 
         return viewHolder;
@@ -60,6 +77,14 @@ public class TaskRecyclerAdapter extends RecyclerView.Adapter<TaskRecyclerAdapte
     @Override
     public int getItemCount() {
         return items.size();
+    }
+
+    public ArrayList<TaskItem> getItems() {
+        return items;
+    }
+
+    public void setItems(ArrayList<TaskItem> items) {
+        this.items = items;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

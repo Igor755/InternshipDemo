@@ -1,11 +1,14 @@
 package com.example.denfox.internshipdemo;
 
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 
 import com.example.denfox.internshipdemo.adapters.TaskRecyclerAdapter;
+import com.example.denfox.internshipdemo.listeners.OnTaskRecyclerItemClickListener;
 import com.example.denfox.internshipdemo.models.TaskItem;
 
 import java.util.ArrayList;
@@ -40,7 +43,16 @@ public class RecyclerActivity extends AppCompatActivity {
         items.add(new TaskItem(true, "Залипнуть в инете", TaskItem.Type.NOTE, "12:00", "14/05/2017"));
         items.add(new TaskItem(true, "Впихнуть невпихуемое", TaskItem.Type.PLACE, "13:00", "15/05/2017"));
 
-        adapter = new TaskRecyclerAdapter(items, this);
+        adapter = new TaskRecyclerAdapter(items, this, new OnTaskRecyclerItemClickListener() {
+            @Override
+            public void onItemClick(View v, int position) {
+                new AlertDialog.Builder(RecyclerActivity.this)
+                        .setTitle("Full task name")
+                        .setMessage(adapter.getItems().get(position).getTaskName())
+                        .setCancelable(true)
+                        .create().show();
+            }
+        });
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
