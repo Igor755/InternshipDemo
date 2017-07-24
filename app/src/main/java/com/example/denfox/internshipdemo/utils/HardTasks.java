@@ -11,7 +11,7 @@ public class HardTasks {
     public final static int THREAD_SLEEP_TIME = 5000;
 
     public void getTaskItemHArdly(@NonNull String taskName, OnTaskItemLoadingCallback callback) {
-        synchronized (this) {
+        synchronized (HardTasks.class) {
             if (callback != null) {
                 callback.onLoadingStarted();
             }
