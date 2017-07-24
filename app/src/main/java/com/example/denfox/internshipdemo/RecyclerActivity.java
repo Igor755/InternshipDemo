@@ -67,7 +67,15 @@ public class RecyclerActivity extends AppCompatActivity {
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                addItem(HardTasks.getTaskItemHArdly("SomeTask"));
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        showProgressBar();
+                        addItem(HardTasks.getTaskItemHArdly("SomeTask"));
+                        hideProgressBar();
+                    }
+                }).start();
+
             }
         });
 
