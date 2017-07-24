@@ -11,24 +11,21 @@ public class HardTasks {
     public final static int THREAD_SLEEP_TIME = 5000;
 
     public void getTaskItemHArdly(@NonNull String taskName, OnTaskItemLoadingCallback callback) {
-        synchronized (HardTasks.class) {
-            if (callback != null) {
-                callback.onLoadingStarted();
-            }
-
-            try {
-                Thread.sleep(THREAD_SLEEP_TIME);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-
-            }
-
-            if (callback != null) {
-                callback.onLoadingFinish(new TaskItem(true, taskName, TaskItem.Type.PLACE, "13:00", "15/05/2017"));
-            }
+        if (callback != null) {
+            callback.onLoadingStarted();
         }
 
+        try {
+            Thread.sleep(THREAD_SLEEP_TIME);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
 
+        }
+
+        if (callback != null) {
+            callback.onLoadingFinish(new TaskItem(true, taskName, TaskItem.Type.PLACE, "13:00", "15/05/2017"));
+        }
     }
+
 
 }

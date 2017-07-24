@@ -17,6 +17,8 @@ import com.example.denfox.internshipdemo.models.TaskItem;
 import com.example.denfox.internshipdemo.utils.HardTasks;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class RecyclerActivity extends AppCompatActivity {
 
@@ -29,6 +31,8 @@ public class RecyclerActivity extends AppCompatActivity {
 
     private HardTasks tasks;
     private HardTasks anotherTasks;
+
+    private ExecutorService service = Executors.newFixedThreadPool(2);
 
 
     @Override
@@ -76,12 +80,13 @@ public class RecyclerActivity extends AppCompatActivity {
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                new Thread(new Runnable() {
+                service.submit(new Runnable() {
                     @Override
                     public void run() {
                         tasks.getTaskItemHArdly("SomeTask", taskItemLoadingCallback);
                     }
-                }).start();
+                });
+
 
             }
         });
@@ -89,12 +94,12 @@ public class RecyclerActivity extends AppCompatActivity {
         addBtnSecond.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                new Thread(new Runnable() {
+                service.submit(new Runnable() {
                     @Override
                     public void run() {
                         anotherTasks.getTaskItemHArdly("SomeAnotherTask", anotherTaskItemLoadingCallback);
                     }
-                }).start();
+                });
             }
         });
 
