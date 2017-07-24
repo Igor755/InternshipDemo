@@ -6,6 +6,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
@@ -21,9 +22,13 @@ public class RecyclerActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private FloatingActionButton addBtn;
+    private FloatingActionButton addBtnSecond;
     private ArrayList<TaskItem> items;
     private TaskRecyclerAdapter adapter;
     private ProgressBar progressBar;
+
+    private HardTasks tasks;
+    private HardTasks anotherTasks;
 
 
     @Override
@@ -33,9 +38,12 @@ public class RecyclerActivity extends AppCompatActivity {
 
         recyclerView = (RecyclerView) findViewById(R.id.rv_recycler);
         addBtn = (FloatingActionButton) findViewById(R.id.fab_add);
+        addBtnSecond = (FloatingActionButton) findViewById(R.id.fab_add_note);
         progressBar = (ProgressBar) findViewById(R.id.pb_progress);
 
         items = new ArrayList<>();
+        tasks = new HardTasks();
+        anotherTasks = new HardTasks();
 
         items.add(new TaskItem(true, "Создать этот список", TaskItem.Type.ALARM, "10:00", "07/05/2017"));
         items.add(new TaskItem(true, "Отметить первый пункт как готовый", TaskItem.Type.ALARM, "11:25", "07/05/2017"));
@@ -71,10 +79,22 @@ public class RecyclerActivity extends AppCompatActivity {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        HardTasks.getTaskItemHArdly("SomeTask", taskItemLoadingCallback);
+                        tasks.getTaskItemHArdly("SomeTask", taskItemLoadingCallback);
                     }
                 }).start();
 
+            }
+        });
+
+        addBtnSecond.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        anotherTasks.getTaskItemHArdly("SomeAnotherTask", anotherTaskItemLoadingCallback);
+                    }
+                }).start();
             }
         });
 
@@ -107,6 +127,7 @@ public class RecyclerActivity extends AppCompatActivity {
     private OnTaskItemLoadingCallback taskItemLoadingCallback = new OnTaskItemLoadingCallback() {
         @Override
         public void onLoadingStarted() {
+            Log.e("TaskLoader", "Starting LoadingTask");
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -118,6 +139,34 @@ public class RecyclerActivity extends AppCompatActivity {
 
         @Override
         public void onLoadingFinish(final TaskItem taskItem) {
+            Log.e("TaskLoader", "Task loaded!");
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    addItem(taskItem);
+                    hideProgressBar();
+                }
+            });
+
+        }
+    };
+
+    private OnTaskItemLoadingCallback anotherTaskItemLoadingCallback = new OnTaskItemLoadingCallback() {
+        @Override
+        public void onLoadingStarted() {
+            Log.e("TaskLoader", "ANOTHER Starting Loading Task");
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    showProgressBar();
+                }
+            });
+
+        }
+
+        @Override
+        public void onLoadingFinish(final TaskItem taskItem) {
+            Log.e("TaskLoader", "ANOTHER Task loaded!");
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
