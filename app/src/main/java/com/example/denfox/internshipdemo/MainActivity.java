@@ -107,13 +107,13 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(ArrayList<TaskItem> taskItems) {
             super.onPostExecute(taskItems);
-            adapter.notifyDataSetChanged();
             hideProgressBlock();
         }
 
         @Override
         protected void onProgressUpdate(Integer... values) {
             super.onProgressUpdate(values);
+            adapter.notifyDataSetChanged();
             int completed = values[0];
             int total = values[1];
 
