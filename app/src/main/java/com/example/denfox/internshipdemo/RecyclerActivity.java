@@ -82,24 +82,42 @@ public class RecyclerActivity extends AppCompatActivity {
 
     }
 
-    private void addItem(TaskItem item){
+    private void addItem(TaskItem item) {
         if (items != null && adapter != null) {
             items.add(item);
-            adapter.notifyDataSetChanged();
-            recyclerView.smoothScrollToPosition(recyclerView.getBottom());
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    adapter.notifyDataSetChanged();
+                    recyclerView.smoothScrollToPosition(recyclerView.getBottom());
+                }
+            });
+
         }
     }
 
     private void showProgressBar() {
-        if (progressBar != null) {
-            progressBar.setVisibility(View.VISIBLE);
-        }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (progressBar != null) {
+                    progressBar.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+
     }
 
     private void hideProgressBar() {
-        if (progressBar != null) {
-            progressBar.setVisibility(View.GONE);
-        }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (progressBar != null) {
+                    progressBar.setVisibility(View.GONE);
+                }
+            }
+        });
+
     }
 
 }
