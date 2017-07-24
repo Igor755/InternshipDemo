@@ -1,6 +1,8 @@
 package com.example.denfox.internshipdemo.utils;
 
 
+import android.util.Log;
+
 import com.example.denfox.internshipdemo.models.TaskItem;
 
 import java.util.ArrayList;
@@ -34,8 +36,9 @@ public class TaskLoader {
     }
 
     public TaskItem loadTaskItemByIndex(int index) {
+        Log.d("TaskLoader", "Loading task at index" + String.valueOf(index));
         try {
-            Thread.sleep(new Random().nextInt(6500));
+            Thread.sleep(new Random().nextInt(3500));
         } catch (InterruptedException e) {
             e.printStackTrace();
             Thread.currentThread().interrupt();
