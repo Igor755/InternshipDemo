@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.ProgressBar;
 
 import com.example.denfox.internshipdemo.adapters.TaskRecyclerAdapter;
+import com.example.denfox.internshipdemo.listeners.OnTaskItemLoadingCallback;
 import com.example.denfox.internshipdemo.listeners.OnTaskRecyclerItemClickListener;
 import com.example.denfox.internshipdemo.models.TaskItem;
 import com.example.denfox.internshipdemo.utils.HardTasks;
@@ -70,9 +71,7 @@ public class RecyclerActivity extends AppCompatActivity {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        showProgressBar();
-                        addItem(HardTasks.getTaskItemHArdly("SomeTask"));
-                        hideProgressBar();
+                        HardTasks.getTaskItemHArdly("SomeTask", taskItemLoadingCallback);
                     }
                 }).start();
 
@@ -85,39 +84,49 @@ public class RecyclerActivity extends AppCompatActivity {
     private void addItem(TaskItem item) {
         if (items != null && adapter != null) {
             items.add(item);
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    adapter.notifyDataSetChanged();
-                    recyclerView.smoothScrollToPosition(recyclerView.getBottom());
-                }
-            });
+            adapter.notifyDataSetChanged();
+            recyclerView.smoothScrollToPosition(recyclerView.getBottom());
 
         }
     }
 
     private void showProgressBar() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (progressBar != null) {
-                    progressBar.setVisibility(View.VISIBLE);
-                }
-            }
-        });
+        if (progressBar != null) {
+            progressBar.setVisibility(View.VISIBLE);
+        }
 
     }
 
     private void hideProgressBar() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (progressBar != null) {
-                    progressBar.setVisibility(View.GONE);
-                }
-            }
-        });
+        if (progressBar != null) {
+            progressBar.setVisibility(View.GONE);
+        }
 
     }
+
+    private OnTaskItemLoadingCallback taskItemLoadingCallback = new OnTaskItemLoadingCallback() {
+        @Override
+        public void onLoadingStarted() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    showProgressBar();
+                }
+            });
+
+        }
+
+        @Override
+        public void onLoadingFinish(final TaskItem taskItem) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    addItem(taskItem);
+                    hideProgressBar();
+                }
+            });
+
+        }
+    };
 
 }
