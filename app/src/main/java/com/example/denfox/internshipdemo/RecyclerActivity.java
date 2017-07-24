@@ -1,25 +1,28 @@
 package com.example.denfox.internshipdemo;
 
+import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.ProgressBar;
 
 import com.example.denfox.internshipdemo.adapters.TaskRecyclerAdapter;
 import com.example.denfox.internshipdemo.listeners.OnTaskRecyclerItemClickListener;
 import com.example.denfox.internshipdemo.models.TaskItem;
+import com.example.denfox.internshipdemo.utils.HardTasks;
 
 import java.util.ArrayList;
 
 public class RecyclerActivity extends AppCompatActivity {
 
-    RecyclerView recyclerView;
-    FloatingActionButton addBtn;
-    ArrayList<TaskItem> items;
-    TaskRecyclerAdapter adapter;
+    private RecyclerView recyclerView;
+    private FloatingActionButton addBtn;
+    private ArrayList<TaskItem> items;
+    private TaskRecyclerAdapter adapter;
+    private ProgressBar progressBar;
 
 
     @Override
@@ -29,6 +32,7 @@ public class RecyclerActivity extends AppCompatActivity {
 
         recyclerView = (RecyclerView) findViewById(R.id.rv_recycler);
         addBtn = (FloatingActionButton) findViewById(R.id.fab_add);
+        progressBar = (ProgressBar) findViewById(R.id.pb_progress);
 
         items = new ArrayList<>();
 
@@ -63,16 +67,31 @@ public class RecyclerActivity extends AppCompatActivity {
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(items != null && adapter != null) {
-                    items.add(new TaskItem(true, "NEW TASK", TaskItem.Type.PLACE, "13:00", "15/05/2017"));
-                    adapter.notifyDataSetChanged();
-                    recyclerView.smoothScrollToPosition(recyclerView.getBottom());
-                }
+                addItem(HardTasks.getTaskItemHArdly("SomeTask"));
             }
         });
 
 
-
-
     }
+
+    private void addItem(TaskItem item){
+        if (items != null && adapter != null) {
+            items.add(item);
+            adapter.notifyDataSetChanged();
+            recyclerView.smoothScrollToPosition(recyclerView.getBottom());
+        }
+    }
+
+    private void showProgressBar() {
+        if (progressBar != null) {
+            progressBar.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void hideProgressBar() {
+        if (progressBar != null) {
+            progressBar.setVisibility(View.GONE);
+        }
+    }
+
 }
