@@ -117,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
             int completed = values[0];
             int total = values[1];
 
-            int percentsCompleted = (int) (((float)completed / total) * 100);
+            int percentsCompleted = (int) (((float) completed / total) * 100);
 
             setLoadingProgress(percentsCompleted);
         }
