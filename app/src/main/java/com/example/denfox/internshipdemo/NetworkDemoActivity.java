@@ -3,7 +3,6 @@ package com.example.denfox.internshipdemo;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -16,20 +15,17 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.denfox.internshipdemo.adapters.GitRepoRecyclerAdapter;
+import com.example.denfox.internshipdemo.api.RestClient;
 import com.example.denfox.internshipdemo.listeners.OnGitRepoRecyclerItemClickListener;
+import com.example.denfox.internshipdemo.models.GitRepoErrorItem;
 import com.example.denfox.internshipdemo.models.GitRepoItem;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+
+import retrofit.Callback;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 public class NetworkDemoActivity extends AppCompatActivity {
 
@@ -71,7 +67,7 @@ public class NetworkDemoActivity extends AppCompatActivity {
                 if (TextUtils.isEmpty(usernameInput.getText().toString())) {
                     usernameInput.requestFocus();
                 } else {
-                    new LoadReposTask().execute(usernameInput.getText().toString());
+                    loadRepos(usernameInput.getText().toString());
                 }
             }
         });
@@ -85,7 +81,7 @@ public class NetworkDemoActivity extends AppCompatActivity {
             startActivity(myIntent);
         } catch (ActivityNotFoundException e) {
             Toast.makeText(this, "No application can handle this request."
-                    + " Please install a webbrowser",  Toast.LENGTH_LONG).show();
+                    + " Please install a webbrowser", Toast.LENGTH_LONG).show();
             e.printStackTrace();
         }
     }
@@ -107,83 +103,34 @@ public class NetworkDemoActivity extends AppCompatActivity {
         Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show();
     }
 
-
-    public class LoadReposTask extends AsyncTask<String, Void, String> {
-
-        private HttpClient httpClient = new DefaultHttpClient();
-        private final static String URL = "https://api.github.com/orgs/%s/repos";
-
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            items.clear();
-            showProgressBlock();
-        }
-
-        @Override
-        protected void onPostExecute(String error) {
-            super.onPostExecute(error);
-            hideProgressBlock();
-            if (error != null) {
-                makeErrorToast(error);
-            } else {
+    private void loadRepos(String username) {
+        showProgressBlock();
+        RestClient.getInstance().getService().getUserRepos(username, new Callback<List<GitRepoItem>>() {
+            @Override
+            public void success(List<GitRepoItem> gitRepoItems, Response response) {
+                items.clear();
+                items.addAll(gitRepoItems);
                 adapter.notifyDataSetChanged();
+                hideProgressBlock();
             }
 
-        }
+            @Override
+            public void failure(RetrofitError error) {
+                GitRepoErrorItem repoError = (GitRepoErrorItem) error.getBodyAs(GitRepoErrorItem.class);
 
-        @Override
-        protected String doInBackground(String... strings) {
-
-            String repoName = strings[0];
-
-            HttpGet request = new HttpGet(Uri.decode(String.format(URL, repoName)));
-            HttpResponse response;
-            try {
-                response = httpClient.execute(request);
-            } catch (IOException e) {
-                e.printStackTrace();
-                return "Unhandled server error";
-            }
-
-            String jsonString;
-            try {
-                jsonString = EntityUtils.toString(response.getEntity());
-            } catch (IOException e) {
-                e.printStackTrace();
-                return "Unhandled parsing error";
-            }
-
-            if (response.getStatusLine().getStatusCode() == 200) {
-
-                try {
-                    JSONArray array = new JSONArray(jsonString);
-                    for (int i = 0; i < array.length(); i++) {
-                        JSONObject object = array.getJSONObject(i);
-                        items.add(new GitRepoItem(object));
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    return "JSON parsing error";
-                }
-
-            } else {
-                try {
-                    JSONObject errorObject = new JSONObject(jsonString);
-                    if (errorObject.has("message")) {
-                        return errorObject.getString("message");
+                if (repoError != null) {
+                    makeErrorToast(repoError.getMessage() + " \n Details: " + error.getUrl());
+                } else {
+                    Response errorResponse = error.getResponse();
+                    if (error.getKind() == RetrofitError.Kind.NETWORK) {
+                        makeErrorToast("Cant connect to network!");
                     } else {
-                        return "Request error with no message";
+                        makeErrorToast("Unhandled error. Code: " + String.valueOf(errorResponse.getStatus()));
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    return "Error parsing error";
                 }
+                hideProgressBlock();
             }
-
-            return null;
-        }
+        });
     }
 
 }
