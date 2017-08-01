@@ -5,6 +5,11 @@ public class GitRepoErrorItem {
     private String message;
     private String documentation_url;
 
+    public GitRepoErrorItem(String message, String documentation_url) {
+        this.message = message;
+        this.documentation_url = documentation_url;
+    }
+
     public String getMessage() {
         return message;
     }

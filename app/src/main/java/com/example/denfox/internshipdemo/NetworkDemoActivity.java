@@ -15,6 +15,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.denfox.internshipdemo.adapters.GitRepoRecyclerAdapter;
+import com.example.denfox.internshipdemo.api.ApiCallback;
 import com.example.denfox.internshipdemo.api.RestClient;
 import com.example.denfox.internshipdemo.listeners.OnGitRepoRecyclerItemClickListener;
 import com.example.denfox.internshipdemo.models.GitRepoErrorItem;
@@ -23,8 +24,6 @@ import com.example.denfox.internshipdemo.models.GitRepoItem;
 import java.util.ArrayList;
 import java.util.List;
 
-import retrofit.Callback;
-import retrofit.RetrofitError;
 import retrofit.client.Response;
 
 public class NetworkDemoActivity extends AppCompatActivity {
@@ -105,7 +104,7 @@ public class NetworkDemoActivity extends AppCompatActivity {
 
     private void loadRepos(String username) {
         showProgressBlock();
-        RestClient.getInstance().getService().getUserRepos(username, new Callback<List<GitRepoItem>>() {
+        RestClient.getInstance().getService().getUserRepos(username, new ApiCallback<List<GitRepoItem>>() {
             @Override
             public void success(List<GitRepoItem> gitRepoItems, Response response) {
                 items.clear();
@@ -115,19 +114,8 @@ public class NetworkDemoActivity extends AppCompatActivity {
             }
 
             @Override
-            public void failure(RetrofitError error) {
-                GitRepoErrorItem repoError = (GitRepoErrorItem) error.getBodyAs(GitRepoErrorItem.class);
-
-                if (repoError != null) {
-                    makeErrorToast(repoError.getMessage() + " \n Details: " + error.getUrl());
-                } else {
-                    Response errorResponse = error.getResponse();
-                    if (error.getKind() == RetrofitError.Kind.NETWORK) {
-                        makeErrorToast("Cant connect to network!");
-                    } else {
-                        makeErrorToast("Unhandled error. Code: " + String.valueOf(errorResponse.getStatus()));
-                    }
-                }
+            public void failure(GitRepoErrorItem error) {
+                makeErrorToast(error.getMessage() + "\n" + "Details:" + error.getDocumentation_url());
                 hideProgressBlock();
             }
         });
