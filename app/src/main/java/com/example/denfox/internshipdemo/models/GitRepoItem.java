@@ -1,11 +1,20 @@
 package com.example.denfox.internshipdemo.models;
 
 
+import com.google.gson.annotations.SerializedName;
+
 public class GitRepoItem {
 
+    @SerializedName("id")
     private int repoId;
+
+    @SerializedName("name")
     private String repoName;
+
+    @SerializedName("url")
     private String webUrl;
+
+    @SerializedName("description")
     private String description;
 
     public GitRepoItem(int repoId, String repoName, String webUrl, String description) {
