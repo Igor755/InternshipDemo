@@ -1,58 +1,42 @@
 package com.example.denfox.internshipdemo.models;
 
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 public class GitRepoItem {
 
-    private int id;
-    private String name;
-    private String url;
+    private int repoId;
+    private String repoName;
+    private String webUrl;
     private String description;
 
-    public GitRepoItem(int id, String name, String url, String description) {
-        this.id = id;
-        this.name = name;
-        this.url = url;
+    public GitRepoItem(int repoId, String repoName, String webUrl, String description) {
+        this.repoId = repoId;
+        this.repoName = repoName;
+        this.webUrl = webUrl;
         this.description = description;
     }
 
-    public GitRepoItem(JSONObject json) {
-
-        try {
-            this.id = json.has("id") ? json.getInt("id") : -1;
-            this.name = json.has("name") ? json.getString("name") : "";
-            this.url = json.has("html_url") ? json.getString("html_url") : null;
-            this.description = json.has("description") ? json.getString("description") : "";
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
+    public int getRepoId() {
+        return repoId;
     }
 
-    public int getId() {
-        return id;
+    public void setRepoId(int repoId) {
+        this.repoId = repoId;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public String getRepoName() {
+        return repoName;
     }
 
-    public String getName() {
-        return name;
+    public void setRepoName(String repoName) {
+        this.repoName = repoName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getWebUrl() {
+        return webUrl;
     }
 
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
+    public void setWebUrl(String webUrl) {
+        this.webUrl = webUrl;
     }
 
     public String getDescription() {
@@ -70,13 +54,13 @@ public class GitRepoItem {
 
         GitRepoItem that = (GitRepoItem) o;
 
-        return id == that.id;
+        return repoId == that.repoId;
 
     }
 
     @Override
     public int hashCode() {
-        return id;
+        return repoId;
     }
 
 }

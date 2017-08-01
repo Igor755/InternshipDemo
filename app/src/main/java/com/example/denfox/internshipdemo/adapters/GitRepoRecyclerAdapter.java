@@ -41,7 +41,7 @@ public class GitRepoRecyclerAdapter extends RecyclerView.Adapter<GitRepoRecycler
             @Override
             public void onClick(View view) {
                 if (listener != null) {
-                    listener.onItemClick(view, viewHolder.getAdapterPosition(), items.get(viewHolder.getAdapterPosition()).getUrl());
+                    listener.onItemClick(view, viewHolder.getAdapterPosition(), items.get(viewHolder.getAdapterPosition()).getWebUrl());
                 }
             }
         });
@@ -53,7 +53,7 @@ public class GitRepoRecyclerAdapter extends RecyclerView.Adapter<GitRepoRecycler
     @Override
     public void onBindViewHolder(GitRepoRecyclerAdapter.ViewHolder holder, int position) {
         holder.description.setText(items.get(position).getDescription());
-        holder.name.setText(items.get(position).getName());
+        holder.name.setText(items.get(position).getRepoName());
 
     }
 
