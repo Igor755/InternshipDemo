@@ -1,6 +1,8 @@
 package com.example.denfox.internshipdemo.models;
 
 
+import android.net.Uri;
+
 import com.google.gson.annotations.SerializedName;
 
 public class GitRepoItem {
@@ -11,13 +13,13 @@ public class GitRepoItem {
     @SerializedName("name")
     private String repoName;
 
-    @SerializedName("url")
-    private String webUrl;
+    @SerializedName("html_url")
+    private Uri webUrl;
 
     @SerializedName("description")
     private String description;
 
-    public GitRepoItem(int repoId, String repoName, String webUrl, String description) {
+    public GitRepoItem(int repoId, String repoName, Uri webUrl, String description) {
         this.repoId = repoId;
         this.repoName = repoName;
         this.webUrl = webUrl;
@@ -40,11 +42,11 @@ public class GitRepoItem {
         this.repoName = repoName;
     }
 
-    public String getWebUrl() {
+    public Uri getWebUrl() {
         return webUrl;
     }
 
-    public void setWebUrl(String webUrl) {
+    public void setWebUrl(Uri webUrl) {
         this.webUrl = webUrl;
     }
 

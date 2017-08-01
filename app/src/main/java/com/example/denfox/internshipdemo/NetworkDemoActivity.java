@@ -52,8 +52,8 @@ public class NetworkDemoActivity extends AppCompatActivity {
 
         adapter = new GitRepoRecyclerAdapter(items, this, new OnGitRepoRecyclerItemClickListener() {
             @Override
-            public void onItemClick(View v, int position, String url) {
-                openRepo(url);
+            public void onItemClick(View v, int position, Uri uri) {
+                openRepo(uri);
             }
         });
 
@@ -74,9 +74,9 @@ public class NetworkDemoActivity extends AppCompatActivity {
     }
 
 
-    private void openRepo(String url) {
+    private void openRepo(Uri uri) {
         try {
-            Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            Intent myIntent = new Intent(Intent.ACTION_VIEW, uri);
             startActivity(myIntent);
         } catch (ActivityNotFoundException e) {
             Toast.makeText(this, "No application can handle this request."
