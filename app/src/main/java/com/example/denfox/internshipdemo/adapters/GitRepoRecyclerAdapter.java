@@ -2,6 +2,8 @@ package com.example.denfox.internshipdemo.adapters;
 
 
 import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,22 +14,19 @@ import android.widget.TextView;
 import com.example.denfox.internshipdemo.R;
 import com.example.denfox.internshipdemo.listeners.OnGitRepoRecyclerItemClickListener;
 import com.example.denfox.internshipdemo.models.GitRepoItem;
+import com.example.denfox.internshipdemo.utils.Consts;
 
-import java.util.ArrayList;
-
-public class GitRepoRecyclerAdapter extends RecyclerView.Adapter<GitRepoRecyclerAdapter.ViewHolder> {
-
-    private ArrayList<GitRepoItem> items;
+public class GitRepoRecyclerAdapter extends CursorRecyclerViewAdapter<GitRepoRecyclerAdapter.ViewHolder> {
     private Context ctx;
     private OnGitRepoRecyclerItemClickListener listener;
 
-    public GitRepoRecyclerAdapter(ArrayList<GitRepoItem> items, Context ctx) {
-        this.items = items;
+    public GitRepoRecyclerAdapter(Cursor cursor, Context ctx) {
+        super(ctx, cursor);
         this.ctx = ctx;
     }
 
-    public GitRepoRecyclerAdapter(ArrayList<GitRepoItem> items, Context ctx, OnGitRepoRecyclerItemClickListener listener) {
-        this.items = items;
+    public GitRepoRecyclerAdapter(Cursor cursor, Context ctx, OnGitRepoRecyclerItemClickListener listener) {
+        super(ctx, cursor);
         this.ctx = ctx;
         this.listener = listener;
     }
@@ -41,7 +40,7 @@ public class GitRepoRecyclerAdapter extends RecyclerView.Adapter<GitRepoRecycler
             @Override
             public void onClick(View view) {
                 if (listener != null) {
-                    listener.onItemClick(view, viewHolder.getAdapterPosition(), items.get(viewHolder.getAdapterPosition()).getWebUrl());
+                    listener.onItemClick(view, viewHolder.getAdapterPosition(), getItem(viewHolder.getAdapterPosition()).getWebUrl());
                 }
             }
         });
@@ -51,24 +50,27 @@ public class GitRepoRecyclerAdapter extends RecyclerView.Adapter<GitRepoRecycler
     }
 
     @Override
-    public void onBindViewHolder(GitRepoRecyclerAdapter.ViewHolder holder, int position) {
-        holder.description.setText(items.get(position).getDescription());
-        holder.name.setText(items.get(position).getRepoName());
+    public void onBindViewHolder(GitRepoRecyclerAdapter.ViewHolder holder, Cursor cursor) {
+        holder.description.setText(cursor.getString(cursor.getColumnIndex(Consts.DB_COL_DESCRIPTION)));
+        holder.name.setText(cursor.getString(cursor.getColumnIndex(Consts.DB_COL_NAME)));
 
     }
 
-    @Override
-    public int getItemCount() {
-        return items.size();
+    public GitRepoItem getItem(int position) {
+        Cursor cursor = getCursor();
+        GitRepoItem item = new GitRepoItem();
+
+        if(cursor.moveToPosition(position)) {
+            item.setDescription(cursor.getString(cursor.getColumnIndex(Consts.DB_COL_DESCRIPTION)));
+            item.setRepoId(cursor.getInt(cursor.getColumnIndex(Consts.DB_COL_ID)));
+            item.setRepoName(cursor.getString(cursor.getColumnIndex(Consts.DB_COL_NAME)));
+            item.setWebUrl(Uri.parse(cursor.getString(cursor.getColumnIndex(Consts.DB_COL_URL))));
+        }
+
+        return item;
+
     }
 
-    public ArrayList<GitRepoItem> getItems() {
-        return items;
-    }
-
-    public void setItems(ArrayList<GitRepoItem> items) {
-        this.items = items;
-    }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 

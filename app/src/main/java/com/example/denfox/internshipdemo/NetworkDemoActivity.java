@@ -24,10 +24,8 @@ import com.example.denfox.internshipdemo.listeners.OnGitRepoRecyclerItemClickLis
 import com.example.denfox.internshipdemo.models.GitRepoErrorItem;
 import com.example.denfox.internshipdemo.models.GitRepoItem;
 import com.example.denfox.internshipdemo.utils.Consts;
-import com.google.gson.reflect.TypeToken;
+import com.example.denfox.internshipdemo.utils.Database;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 
 import retrofit.client.Response;
@@ -41,7 +39,8 @@ public class NetworkDemoActivity extends AppCompatActivity {
     private CheckBox showUserRepos;
     private CheckBox dontCleadList;
 
-    private ArrayList<GitRepoItem> items;
+    private Database database;
+
     private GitRepoRecyclerAdapter adapter;
 
     SharedPreferences preferences;
@@ -52,21 +51,11 @@ public class NetworkDemoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_network_demo);
 
-        items = new ArrayList<>();
+        database = new Database(this);
+        database.open();
+        database.clearData();
+
         preferences = getSharedPreferences(Consts.PREFS_NAME, MODE_PRIVATE);
-
-        try {
-            List<GitRepoItem> cachedList;
-            String json = preferences.getString(Consts.PREFS_REPO_LIST, null);
-
-            Type listType = new TypeToken<List<GitRepoItem>>() {
-            }.getType();
-
-            cachedList = RestClient.getInstance().getGson().fromJson(json, listType);
-            items.addAll(cachedList);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
 
         recycler = (RecyclerView) findViewById(R.id.rv_repos_recycler);
@@ -76,7 +65,7 @@ public class NetworkDemoActivity extends AppCompatActivity {
         showUserRepos = (CheckBox) findViewById(R.id.cbx_user_repo);
         dontCleadList = (CheckBox) findViewById(R.id.cbx_dont_clear);
 
-        adapter = new GitRepoRecyclerAdapter(items, this, new OnGitRepoRecyclerItemClickListener() {
+        adapter = new GitRepoRecyclerAdapter(database.getAllData(), this, new OnGitRepoRecyclerItemClickListener() {
             @Override
             public void onItemClick(View v, int position, Uri uri) {
                 openRepo(uri);
@@ -160,13 +149,10 @@ public class NetworkDemoActivity extends AppCompatActivity {
             public void success(List<GitRepoItem> gitRepoItems, Response response) {
 
                 if (!preferences.getBoolean(Consts.PREFS_DONT_CLEAR_LIST, false)) {
-                    items.clear();
+                    database.clearData();
                 }
-                items.addAll(gitRepoItems);
-                preferences.edit()
-                        .putString(Consts.PREFS_REPO_LIST, RestClient.getInstance().getGson().toJson(gitRepoItems))
-                        .apply();
-                adapter.notifyDataSetChanged();
+                database.addApiData(gitRepoItems);
+                adapter.swapCursor(database.getAllData());
                 hideProgressBlock();
             }
 
@@ -184,4 +170,10 @@ public class NetworkDemoActivity extends AppCompatActivity {
         }
     }
 
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        database.close();
+    }
 }

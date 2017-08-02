@@ -19,6 +19,9 @@ public class GitRepoItem {
     @SerializedName("description")
     private String description;
 
+    public GitRepoItem() {
+    }
+
     public GitRepoItem(int repoId, String repoName, Uri webUrl, String description) {
         this.repoId = repoId;
         this.repoName = repoName;
