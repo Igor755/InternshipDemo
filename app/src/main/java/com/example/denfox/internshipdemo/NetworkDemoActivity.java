@@ -24,7 +24,9 @@ import com.example.denfox.internshipdemo.listeners.OnGitRepoRecyclerItemClickLis
 import com.example.denfox.internshipdemo.models.GitRepoErrorItem;
 import com.example.denfox.internshipdemo.models.GitRepoItem;
 import com.example.denfox.internshipdemo.utils.Consts;
+import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,8 +53,21 @@ public class NetworkDemoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_network_demo);
 
         items = new ArrayList<>();
-
         preferences = getSharedPreferences(Consts.PREFS_NAME, MODE_PRIVATE);
+
+        try {
+            List<GitRepoItem> cachedList;
+            String json = preferences.getString(Consts.PREFS_REPO_LIST, null);
+
+            Type listType = new TypeToken<List<GitRepoItem>>() {
+            }.getType();
+
+            cachedList = RestClient.getInstance().getGson().fromJson(json, listType);
+            items.addAll(cachedList);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
 
         recycler = (RecyclerView) findViewById(R.id.rv_repos_recycler);
         usernameInput = (EditText) findViewById(R.id.et_username_input);
@@ -148,6 +163,9 @@ public class NetworkDemoActivity extends AppCompatActivity {
                     items.clear();
                 }
                 items.addAll(gitRepoItems);
+                preferences.edit()
+                        .putString(Consts.PREFS_REPO_LIST, RestClient.getInstance().getGson().toJson(gitRepoItems))
+                        .apply();
                 adapter.notifyDataSetChanged();
                 hideProgressBlock();
             }

@@ -23,6 +23,7 @@ public class RestClient {
 
         gson = new GsonBuilder()
                 .registerTypeAdapter(Uri.class, new UriDeserializer())
+                .registerTypeAdapter(Uri.class, new UriSerializer())
                 .create();
 
         restAdapter = new RestAdapter.Builder()
@@ -37,6 +38,10 @@ public class RestClient {
 
     public static RestClient getInstance() {
         return sInstance;
+    }
+
+    public Gson getGson() {
+        return gson;
     }
 
     public ApiService getService() {
