@@ -10,7 +10,10 @@ import retrofit.http.Path;
 
 public interface ApiService {
 
-    @GET("/orgs/{username}/repos")
+    @GET("/orgs/{company_name}/repos")
+    void getCompanyRepos(@Path("company_name") String companyName, ApiCallback<List<GitRepoItem>> callback);
+
+    @GET("/users/{username}/repos")
     void getUserRepos(@Path("username") String username, ApiCallback<List<GitRepoItem>> callback);
 
 

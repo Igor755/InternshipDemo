@@ -2,6 +2,7 @@ package com.example.denfox.internshipdemo;
 
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -10,6 +11,8 @@ import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -20,6 +23,7 @@ import com.example.denfox.internshipdemo.api.RestClient;
 import com.example.denfox.internshipdemo.listeners.OnGitRepoRecyclerItemClickListener;
 import com.example.denfox.internshipdemo.models.GitRepoErrorItem;
 import com.example.denfox.internshipdemo.models.GitRepoItem;
+import com.example.denfox.internshipdemo.utils.Consts;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,9 +36,13 @@ public class NetworkDemoActivity extends AppCompatActivity {
     private EditText usernameInput;
     private Button goButton;
     private ProgressBar progressBar;
+    private CheckBox showUserRepos;
+    private CheckBox dontCleadList;
 
     private ArrayList<GitRepoItem> items;
     private GitRepoRecyclerAdapter adapter;
+
+    SharedPreferences preferences;
 
 
     @Override
@@ -44,11 +52,14 @@ public class NetworkDemoActivity extends AppCompatActivity {
 
         items = new ArrayList<>();
 
+        preferences = getSharedPreferences(Consts.PREFS_NAME, MODE_PRIVATE);
 
         recycler = (RecyclerView) findViewById(R.id.rv_repos_recycler);
         usernameInput = (EditText) findViewById(R.id.et_username_input);
         goButton = (Button) findViewById(R.id.btn_go);
         progressBar = (ProgressBar) findViewById(R.id.pb_progress);
+        showUserRepos = (CheckBox) findViewById(R.id.cbx_user_repo);
+        dontCleadList = (CheckBox) findViewById(R.id.cbx_dont_clear);
 
         adapter = new GitRepoRecyclerAdapter(items, this, new OnGitRepoRecyclerItemClickListener() {
             @Override
@@ -68,6 +79,30 @@ public class NetworkDemoActivity extends AppCompatActivity {
                 } else {
                     loadRepos(usernameInput.getText().toString());
                 }
+            }
+        });
+
+        initCheckBox();
+
+    }
+
+    private void initCheckBox() {
+
+        showUserRepos.setChecked(preferences.getBoolean(Consts.PREFS_USERS_REPO, false));
+        dontCleadList.setChecked(preferences.getBoolean(Consts.PREFS_DONT_CLEAR_LIST, false));
+
+
+        showUserRepos.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                preferences.edit().putBoolean(Consts.PREFS_USERS_REPO, isChecked).apply(); //TODO: or commit()?
+            }
+        });
+
+        dontCleadList.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                preferences.edit().putBoolean(Consts.PREFS_DONT_CLEAR_LIST, isChecked).apply();
             }
         });
 
@@ -104,10 +139,14 @@ public class NetworkDemoActivity extends AppCompatActivity {
 
     private void loadRepos(String username) {
         showProgressBlock();
-        RestClient.getInstance().getService().getUserRepos(username, new ApiCallback<List<GitRepoItem>>() {
+
+        ApiCallback<List<GitRepoItem>> callback = new ApiCallback<List<GitRepoItem>>() {
             @Override
             public void success(List<GitRepoItem> gitRepoItems, Response response) {
-                items.clear();
+
+                if (!preferences.getBoolean(Consts.PREFS_DONT_CLEAR_LIST, false)) {
+                    items.clear();
+                }
                 items.addAll(gitRepoItems);
                 adapter.notifyDataSetChanged();
                 hideProgressBlock();
@@ -118,7 +157,13 @@ public class NetworkDemoActivity extends AppCompatActivity {
                 makeErrorToast(error.getMessage() + "\n" + "Details:" + error.getDocumentation_url());
                 hideProgressBlock();
             }
-        });
+        };
+
+        if (preferences.getBoolean(Consts.PREFS_USERS_REPO, false)) {
+            RestClient.getInstance().getService().getUserRepos(username, callback);
+        } else {
+            RestClient.getInstance().getService().getCompanyRepos(username, callback);
+        }
     }
 
 }
