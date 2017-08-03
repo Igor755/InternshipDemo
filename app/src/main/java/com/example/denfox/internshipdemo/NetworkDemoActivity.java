@@ -1,8 +1,13 @@
 package com.example.denfox.internshipdemo;
 
+import android.app.LoaderManager;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -30,7 +35,7 @@ import java.util.List;
 
 import retrofit.client.Response;
 
-public class NetworkDemoActivity extends AppCompatActivity {
+public class NetworkDemoActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private RecyclerView recycler;
     private EditText usernameInput;
@@ -54,6 +59,7 @@ public class NetworkDemoActivity extends AppCompatActivity {
         database = new Database(this);
         database.open();
         database.clearData();
+        getLoaderManager().initLoader(Consts.LOADER_ID, null, this);
 
         preferences = getSharedPreferences(Consts.PREFS_NAME, MODE_PRIVATE);
 
@@ -152,7 +158,7 @@ public class NetworkDemoActivity extends AppCompatActivity {
                     database.clearData();
                 }
                 database.addApiData(gitRepoItems);
-                adapter.swapCursor(database.getAllData());
+                getLoaderManager().getLoader(Consts.LOADER_ID).forceLoad();
                 hideProgressBlock();
             }
 
@@ -174,6 +180,43 @@ public class NetworkDemoActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        getLoaderManager().destroyLoader(Consts.LOADER_ID);
         database.close();
     }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new MyCursorLoader(NetworkDemoActivity.this, database);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        adapter.swapCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
+    }
+
+    /**
+     * Subclass of {@link android.content.CursorLoader} which provides loader associated
+     * with application database's implementation.
+     */
+    static class MyCursorLoader extends CursorLoader {
+
+        Database db;
+
+        public MyCursorLoader(Context context, Database db) {
+            super(context);
+            this.db = db;
+        }
+
+        @Override
+        public Cursor loadInBackground() {
+            return db.getAllData();
+        }
+
+    }
+
 }
