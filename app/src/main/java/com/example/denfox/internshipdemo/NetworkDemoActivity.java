@@ -6,7 +6,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.RelativeLayout;
 
-import com.example.denfox.internshipdemo.mainscreen.MainFragment;
+import com.example.denfox.internshipdemo.mvp.mainscreen.view.MainFragment;
 
 public class NetworkDemoActivity extends AppCompatActivity {
 

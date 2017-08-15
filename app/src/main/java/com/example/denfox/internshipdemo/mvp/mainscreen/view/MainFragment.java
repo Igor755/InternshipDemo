@@ -1,4 +1,4 @@
-package com.example.denfox.internshipdemo.mainscreen;
+package com.example.denfox.internshipdemo.mvp.mainscreen.view;
 
 import android.content.ActivityNotFoundException;
 import android.content.Context;
@@ -35,9 +35,6 @@ import java.util.List;
 
 import retrofit.client.Response;
 
-/**
- * Created by denfox on 8/15/17.
- */
 
 public class MainFragment extends Fragment {
 
