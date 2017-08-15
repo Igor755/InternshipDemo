@@ -1,9 +1,8 @@
 package com.example.denfox.internshipdemo.mvp.mainscreen.view;
 
 import android.content.ActivityNotFoundException;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -23,20 +22,11 @@ import android.widget.Toast;
 
 import com.example.denfox.internshipdemo.R;
 import com.example.denfox.internshipdemo.adapters.GitRepoRecyclerAdapter;
-import com.example.denfox.internshipdemo.api.ApiCallback;
-import com.example.denfox.internshipdemo.api.RestClient;
 import com.example.denfox.internshipdemo.listeners.OnGitRepoRecyclerItemClickListener;
-import com.example.denfox.internshipdemo.models.GitRepoErrorItem;
-import com.example.denfox.internshipdemo.models.GitRepoItem;
-import com.example.denfox.internshipdemo.utils.Consts;
-import com.example.denfox.internshipdemo.utils.Database;
-
-import java.util.List;
-
-import retrofit.client.Response;
+import com.example.denfox.internshipdemo.mvp.mainscreen.contract.MainContract;
 
 
-public class MainFragment extends Fragment {
+public class MainFragment extends Fragment implements MainContract.View {
 
     private RecyclerView recycler;
     private EditText usernameInput;
@@ -45,11 +35,9 @@ public class MainFragment extends Fragment {
     private CheckBox showUserRepos;
     private CheckBox dontCleadList;
 
-    private Database database;
-
     private GitRepoRecyclerAdapter adapter;
 
-    SharedPreferences preferences;
+    private MainContract.Presenter presenter;
 
 
     @Nullable
@@ -57,12 +45,7 @@ public class MainFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
 
-        database = new Database(getContext());
-        database.open();
-        database.clearData();
-
-        preferences = getContext().getSharedPreferences(Consts.PREFS_NAME, Context.MODE_PRIVATE);
-
+        presenter.prepareData();
 
         recycler = view.findViewById(R.id.rv_repos_recycler);
         usernameInput = view.findViewById(R.id.et_username_input);
@@ -71,7 +54,7 @@ public class MainFragment extends Fragment {
         showUserRepos = view.findViewById(R.id.cbx_user_repo);
         dontCleadList = view.findViewById(R.id.cbx_dont_clear);
 
-        adapter = new GitRepoRecyclerAdapter(database.getAllData(), getContext(), new OnGitRepoRecyclerItemClickListener() {
+        adapter = new GitRepoRecyclerAdapter(null, getContext(), new OnGitRepoRecyclerItemClickListener() {
             @Override
             public void onItemClick(View v, int position, Uri uri) {
                 openRepo(uri);
@@ -87,7 +70,7 @@ public class MainFragment extends Fragment {
                 if (TextUtils.isEmpty(usernameInput.getText().toString())) {
                     usernameInput.requestFocus();
                 } else {
-                    loadRepos(usernameInput.getText().toString());
+                    presenter.loadRepos(usernameInput.getText().toString());
                 }
             }
         });
@@ -99,28 +82,28 @@ public class MainFragment extends Fragment {
 
     private void initCheckBox() {
 
-        showUserRepos.setChecked(preferences.getBoolean(Consts.PREFS_USERS_REPO, false));
-        dontCleadList.setChecked(preferences.getBoolean(Consts.PREFS_DONT_CLEAR_LIST, false));
+        showUserRepos.setChecked(presenter.isUserRepoEnabled());
+        dontCleadList.setChecked(presenter.isDontClearEnabled());
 
 
         showUserRepos.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                preferences.edit().putBoolean(Consts.PREFS_USERS_REPO, isChecked).apply(); //TODO: or commit()?
+                presenter.setUserRepoEnabled(isChecked); //TODO: or commit()?
             }
         });
 
         dontCleadList.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                preferences.edit().putBoolean(Consts.PREFS_DONT_CLEAR_LIST, isChecked).apply();
+                presenter.setDontClearEnabled(isChecked);
             }
         });
 
     }
 
-
-    private void openRepo(Uri uri) {
+    @Override
+    public void openRepo(Uri uri) {
         try {
             Intent myIntent = new Intent(Intent.ACTION_VIEW, uri);
             startActivity(myIntent);
@@ -131,57 +114,32 @@ public class MainFragment extends Fragment {
         }
     }
 
-    private void showProgressBlock() {
+    @Override
+    public void showProgressBar() {
         if (progressBar != null) {
             progressBar.setVisibility(View.VISIBLE);
         }
-
     }
 
-    private void hideProgressBlock() {
+    @Override
+    public void hideProgressBar() {
         if (progressBar != null) {
             progressBar.setVisibility(View.GONE);
         }
     }
 
-    private void makeErrorToast(String errorMessage) {
+    @Override
+    public void makeErrorToast(String errorMessage) {
         Toast.makeText(getContext(), errorMessage, Toast.LENGTH_SHORT).show();
     }
 
-    private void loadRepos(String username) {
-        showProgressBlock();
-
-        ApiCallback<List<GitRepoItem>> callback = new ApiCallback<List<GitRepoItem>>() {
-            @Override
-            public void success(List<GitRepoItem> gitRepoItems, Response response) {
-
-                if (!preferences.getBoolean(Consts.PREFS_DONT_CLEAR_LIST, false)) {
-                    database.clearData();
-                }
-                database.addApiData(gitRepoItems);
-                adapter.swapCursor(database.getAllData());
-                hideProgressBlock();
-            }
-
-            @Override
-            public void failure(GitRepoErrorItem error) {
-                makeErrorToast(error.getMessage() + "\n" + "Details:" + error.getDocumentation_url());
-                hideProgressBlock();
-            }
-        };
-
-        if (preferences.getBoolean(Consts.PREFS_USERS_REPO, false)) {
-            RestClient.getInstance().getService().getUserRepos(username, callback);
-        } else {
-            RestClient.getInstance().getService().getCompanyRepos(username, callback);
-        }
+    @Override
+    public void swapMainListCursor(Cursor cursor) {
+        adapter.swapCursor(cursor);
     }
-
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        database.close();
+    public void setPresenter(MainContract.Presenter presenter) {
+        this.presenter = presenter;
     }
-
 }
