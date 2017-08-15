@@ -21,7 +21,7 @@ public class Consts {
     public final static String DB_COL_DESCRIPTION = "repoDescription";
     public final static String DB_COL_NAME = "repoName";
     public final static String DB_COL_URL = "repoURL";
-    public final static int DB_VERSION = 1;
+    public final static int DB_VERSION = 3;
 
     // SQL Query
     public static final String DB_CREATE =
